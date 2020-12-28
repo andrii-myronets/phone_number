@@ -4,37 +4,29 @@ import axios from 'axios';
 import Flag from 'react-world-flags'
 import InputMask from 'react-input-mask';
 import { findFlag } from '../../utils/findFlag';
-
+import countryData from '../../data/countryData.json';
 
 export const PhoneInput = () => {
-
-    const [selects, setSelects] = useState([]);
-    const [selectValue, setSelectValue] = useState({});
+      
+    const [selectValue, setSelectValue] = useState('');
     const [inputValue, setInputValue] = useState('');
 
-    const selectHeandler = (event) => {
+    const selectHandler = (event) => {
         setSelectValue(event.target.value);
-        setInputValue(event.target.value.dialCode)
+        setInputValue(event.target.value)
     }
-    const inputHeandler = (event) => {
-        if (event.target.value.split(' ').join('').length < 5) {
-            setSelectValue(findFlag(event.target.value.split(' ').join(''), selects))
+    const inputHandler = (event) => {
+       
+        if (event.target.value.length < 5) {
+            setSelectValue(`+${event.target.value}`);
         }
         setInputValue(event.target.value)
     }
 
     useEffect(() => {
-        axios.get('countryData.json')
-            .then(res => setSelects(res.data))
-            .catch(e => console.log(e));
-            
         axios.get('https://ipapi.co/json/')
             .then(res => {
-                setSelectValue({
-                    "name": res.data.country_name,
-                    "dialCode": res.data.country_calling_code,
-                    "isoCode": res.data.country_code
-                })
+                setSelectValue(res.data.country_calling_code)
                 setInputValue(res.data.country_calling_code)
             })
             .catch(e => console.log(e));
@@ -44,19 +36,21 @@ export const PhoneInput = () => {
         <SltyledBox>
             <Select
                 value={selectValue}
-                onChange={selectHeandler}
-                renderValue={(value) =>
-                    value.isoCode ? <Flag code={value.isoCode} height={16} /> : <Flag code="foo" fallback={<UnknowFlag>?</UnknowFlag>} />
+                onChange={selectHandler}
+                renderValue={(value) =>{
+                    const flagCode = findFlag(value);
+                    return flagCode ? <Flag code={flagCode} height={16} /> : <Flag code="foo" fallback={<UnknowFlag>?</UnknowFlag>} />
+                }                
                 }
             >
-                {selects && selects.map((item, index) =>
-                    <MenuItem key={index} value={item}>
+                {countryData && countryData.map((item, index) =>
+                    <MenuItem key={index} value={item.dialCode}>
                         <Flag code={item.isoCode} height={16} />
                         <Typography color='textPrimary' style={{ padding: '0 10px 0 10px' }}>{item.name}</Typography>
                         <Typography color='textSecondary'>{item.dialCode}</Typography>
                     </MenuItem>)}
             </Select>
-            <InputMask mask='99 999 999 99 99' maskChar={''} value={inputValue} onChange={inputHeandler}>
+            <InputMask mask='999999999999' maskChar={''} value={inputValue} onChange={inputHandler}>
                 {(inputProps) => <Input {...inputProps} startAdornment={'+'}/>}
             </InputMask>
         </SltyledBox>

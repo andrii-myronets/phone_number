@@ -1,7 +1,7 @@
 import { Container, styled } from '@material-ui/core';
 import React from 'react';
 import './App.css';
-import { PhoneInput } from './components/PhoneImput';
+import { PhoneInput } from './components/PhoneInput';
 
 
 
